@@ -26,15 +26,62 @@ public:
 
     bool makeMove(int row, int col, char symbol);
 
-    bool checkWin(char symbol) const;
+    bool checkWin(char symbol) const
+    {
+        for(int i = 0 ; i < size ; i++)
+        {
 
-    bool isFull() const;
+            bool rowWin = true;
+            bool colWin = true;
 
-    char getCell(int row, int col) const;
+            for(int j = 0 ; j < size ; j++)
+            {
+
+                if(grid[i][j] != symbol)
+                    rowWin = false;
+                if(grid[j][i] != symbol)
+                    colWin = false ;
+            }
+            if(rowWin || colWin)
+                return true;
+        }
+        bool diag1 = true;
+        bool diag2 = true;
+
+        for(int i = 0 ; i < size;i++)
+        {
+
+            if(grid[i][i] != symbol)
+                diag1 = false;
+            if(grid[i][size-i-1] != symbol)
+                diag2 = false;
+        }
+        return diag1 || diag2;
+
+    }
+
+    bool isFull() const
+    {
+        for(auto &row : grid)
+        {
+            for(auto &cell: row)
+                if(cell == ' ')
+                return false;
+        }
+        return true;
+    }
+
+    char getCell(int row, int col) const
+    {
+        return grid[row][col];
+    }
 
     void reset();
 
-    int getSize() const;
+    int getSize() const
+    {
+        return size;
+    }
 };
 
 
@@ -51,11 +98,14 @@ public:
 
     string getName() const;
 
-    char getSymbol() const;
+    char getSymbol() const
+    {
+        return symbol;
+    }
 
     void setName(const string& newName);
 
-    virtual ~Player();
+    virtual ~Player() {}
 };
 
 
@@ -111,9 +161,26 @@ private:
 
 public:
 
-    Game();
+    Game()
+    {
+        player1 = nullptr;
+        player2 = nullptr;
+        currentPlayer = nullptr;
+        ai = nullptr;
+        vsAI = false;
+    }
 
-    void showMenu();
+    void showMenu()
+    {
+        cout << "\nTIC-TAC-TOE GAME\n";
+        cout << "================\n";
+        cout << "1. Player vs Player \n";
+        cout << "2. Player vs Computer (Easy)\n";
+        cout << "3. Player vs Computer (Hard)\n";
+        cout << "4. Exit\n";
+
+
+    }
 
     void setupPvP();
 
@@ -123,7 +190,14 @@ public:
 
     void handleHumanMove(Player* player);
 
-    void handleAIMove(AIPlayer* aiPlayer);
+    void handleAIMove(AIPlayer* aiPlayer)
+    {
+        int row;
+        int col;
+        aiPlayer->calculateMove(board,row,col);
+        board.makeMove(row,col,aiPlayer->getSymbol());
+        cout << "Computer Played: " << row+1 << " " << col+1 << endl;
+    }
 
     bool checkGameEnd();
 
