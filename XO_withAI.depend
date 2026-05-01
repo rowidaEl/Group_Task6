@@ -1,0 +1,10 @@
+# depslib dependency file v1.0
+1777667128 source:c:\users\rowida\desktop\grouptask\group_task6\xo_withai\main.cpp
+	<iostream>
+	<vector>
+	<string>
+	<limits>
+	<cstdlib>
+	<ctime>
+	<algorithm>
+

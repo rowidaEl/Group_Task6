@@ -104,7 +104,11 @@ public:
         return grid[row][col];
     }
 
-    void reset();
+    void reset() {
+        for (auto &row : grid)
+            for (auto &cell : row)
+                cell = ' ';
+    }
 
     int getSize() const
     {
@@ -146,7 +150,13 @@ public:
      HumanPlayer(const string& name, char symbol)
         : Player(name, symbol) {}
 
-    void getMove(int& row, int& col) override;
+    void getMove(int& row, int& col) override {
+        cout << name << " enter row and column (1-3): ";
+        cin >> row >> col;
+
+        row--;
+        col--;
+    }
 };
 
 
@@ -160,26 +170,15 @@ public:
      AIPlayer(const string& name, char symbol, Difficulty difficulty)
         : Player(name, symbol), difficulty(difficulty) {}
 
-// ==========================================
-    // IMPLEMENTED: setDifficulty
-    // ==========================================
     void setDifficulty(Difficulty newDifficulty) {
         difficulty = newDifficulty;
     }
 
-    // ==========================================
-    // IMPLEMENTED: getMove
-    // ==========================================
     void getMove(int& row, int& col) override {
-        // Dummy override since base Player::getMove lacks a Board reference.
-        // The Game class should call calculateMove() to pass the board state.
         row = -1;
         col = -1;
     }
 
-    // ==========================================
-    // IMPLEMENTED: getRandomMove
-    // ==========================================
     void getRandomMove(const Board& board, int& row, int& col) const {
         int size = board.getSize();
         do {
@@ -200,7 +199,7 @@ public:
     else if (board.checkWin(oppSymbol)) {
         return -10;
     }
-    
+
     // Draw or ongoing game
     return 0;
     }
@@ -220,7 +219,7 @@ public:
         for (int i = 0; i < board.getSize(); i++) {
             for (int j = 0; j < board.getSize(); j++) {
                 if (board.getCell(i, j) == ' ') {
-                    Board nextBoard = board; 
+                    Board nextBoard = board;
                     nextBoard.makeMove(i, j, symbol);
                     best = std::max(best, minimax(nextBoard, !isMax));
                 }
@@ -252,7 +251,7 @@ public:
             if (board.getCell(i, j) == ' ') {
                 Board nextBoard = board;
                 nextBoard.makeMove(i, j, symbol);
-                
+
                 // AI just made a move, so next turn is the minimizer's turn (false)
                 int moveVal = minimax(nextBoard, false);
 
@@ -266,14 +265,12 @@ public:
     }
     }
 
-    // ==========================================
-    // IMPLEMENTED: calculateMove
-    // ==========================================
+
     void calculateMove(Board& board, int& row, int& col) {
         if (difficulty == EASY) {
             getRandomMove(board, row, col);
         } else {
-            getBestMove(board, row, col); 
+            getBestMove(board, row, col);
         }
     }
 };
@@ -317,36 +314,34 @@ public:
 
     }
 
-    // ==========================================
-    // IMPLEMENTED: setupPvP
-    // ==========================================
-    void setupPvP() {
+    void setupPvP()
+       {
+
+       board.reset();
         string name1, name2;
         cout << "Enter Player 1 (X) Name: ";
         cin >> name1;
         cout << "Enter Player 2 (O) Name: ";
         cin >> name2;
-        
+
         player1 = new HumanPlayer(name1, 'X');
         player2 = new HumanPlayer(name2, 'O');
-        
+
         currentPlayer = player1;
         vsAI = false;
     }
 
-    // ==========================================
-    // IMPLEMENTED: setupPvC
-    // ==========================================
     void setupPvC(Difficulty diff) {
+          board.reset();
         string name;
         cout << "Enter Player (X) Name: ";
         cin >> name;
-        
+
         player1 = new HumanPlayer(name, 'X');
         ai = new AIPlayer("Computer", 'O', diff);
-        
-        player2 = ai; 
-        currentPlayer = player1; 
+
+        player2 = ai;
+        currentPlayer = player1;
         vsAI = true;
     }
 
@@ -415,39 +410,74 @@ public:
         currentPlayer = player1;
     }
 
-    void start(){
-        showMenu(); // Setup the game mode (PvP or PvC)
+  void start() {
 
-    bool playing = true;
-    while (playing) {
-        reset(); 
-        bool gameEnded = false;
+        srand(time(0));
 
-        while (!gameEnded) {
-            board.display();
-            
-            if (vsAI && currentPlayer == ai) {
-                handleAIMove(ai);
-            } else {
-                handleHumanMove(currentPlayer);
-            }
+        while (true) {
 
-            gameEnded = checkGameEnd();
-            
-            if (!gameEnded) {
+            showMenu();
+
+            int choice;
+
+            cout << "Select game mode: ";
+            cin >> choice;
+
+            if (choice == 4)
+                break;
+
+            if (choice == 1)
+                setupPvP();
+
+            else if (choice == 2)
+                setupPvC(EASY);
+
+            else if (choice == 3)
+                setupPvC(HARD);
+
+            else
+                continue;
+
+            bool playing = true;
+
+            while (playing) {
+
+                board.display();
+
+                cout << currentPlayer->getName()
+                     << "'s turn ("
+                     << currentPlayer->getSymbol()
+                     << ")\n";
+
+                if (vsAI && currentPlayer == player2)
+                    handleAIMove(ai);
+                else
+                    handleHumanMove(currentPlayer);
+
+                if (checkGameEnd()) {
+
+                    char again;
+
+                    cout << "Play again? (y/n): ";
+                    cin >> again;
+
+                    if (again == 'y' || again == 'Y') {
+                        reset();
+                        continue;
+                    }
+
+                    playing = false;
+                    break;
+                }
+
                 switchPlayer();
             }
-        }
 
-        std::cout << "Would you like to play again? (y/n): ";
-        char choice;
-        std::cin >> choice;
-        if (choice != 'y' && choice != 'Y') {
-            playing = false;
+            delete player1;
+            delete player2;
+
+            player1 = player2 = currentPlayer = nullptr;
         }
-    }
-    
-    std::cout << "Thanks for playing!" << std::endl;
     }
 };
 
