@@ -78,11 +78,33 @@ public:
      AIPlayer(const string& name, char symbol, Difficulty difficulty)
         : Player(name, symbol), difficulty(difficulty) {}
 
-    void setDifficulty(Difficulty newDifficulty);
+// ==========================================
+    // IMPLEMENTED: setDifficulty
+    // ==========================================
+    void setDifficulty(Difficulty newDifficulty) {
+        difficulty = newDifficulty;
+    }
 
-    void getMove(int& row, int& col) override;
+    // ==========================================
+    // IMPLEMENTED: getMove
+    // ==========================================
+    void getMove(int& row, int& col) override {
+        // Dummy override since base Player::getMove lacks a Board reference.
+        // The Game class should call calculateMove() to pass the board state.
+        row = -1;
+        col = -1;
+    }
 
-    void getRandomMove(const Board& board, int& row, int& col) const;
+    // ==========================================
+    // IMPLEMENTED: getRandomMove
+    // ==========================================
+    void getRandomMove(const Board& board, int& row, int& col) const {
+        int size = board.getSize();
+        do {
+            row = rand() % size;
+            col = rand() % size;
+        } while (!board.isValidMove(row, col));
+    }
 
     int evaluateBoard(const Board& board) const;
 
@@ -90,7 +112,16 @@ public:
 
     void getBestMove(Board& board, int& row, int& col) const;
 
-    void calculateMove(Board& board, int& row, int& col);
+    // ==========================================
+    // IMPLEMENTED: calculateMove
+    // ==========================================
+    void calculateMove(Board& board, int& row, int& col) {
+        if (difficulty == EASY) {
+            getRandomMove(board, row, col);
+        } else {
+            getBestMove(board, row, col); 
+        }
+    }
 };
 
 
@@ -115,9 +146,38 @@ public:
 
     void showMenu();
 
-    void setupPvP();
+    // ==========================================
+    // IMPLEMENTED: setupPvP
+    // ==========================================
+    void setupPvP() {
+        string name1, name2;
+        cout << "Enter Player 1 (X) Name: ";
+        cin >> name1;
+        cout << "Enter Player 2 (O) Name: ";
+        cin >> name2;
+        
+        player1 = new HumanPlayer(name1, 'X');
+        player2 = new HumanPlayer(name2, 'O');
+        
+        currentPlayer = player1;
+        vsAI = false;
+    }
 
-    void setupPvC(Difficulty diff);
+    // ==========================================
+    // IMPLEMENTED: setupPvC
+    // ==========================================
+    void setupPvC(Difficulty diff) {
+        string name;
+        cout << "Enter Player (X) Name: ";
+        cin >> name;
+        
+        player1 = new HumanPlayer(name, 'X');
+        ai = new AIPlayer("Computer", 'O', diff);
+        
+        player2 = ai; 
+        currentPlayer = player1; 
+        vsAI = true;
+    }
 
     void switchPlayer();
 
