@@ -20,11 +20,38 @@ public:
     }
 
 
-    void display() const;
+    void display() const{
+    cout << "\n";
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+            cout << " " << grid[i][j] << " ";
+            if (j < size - 1) cout << "|";
+        }
+        cout << "\n";
+        if (i < size - 1) {
+            for (int j = 0; j < size; j++) {
+                cout << "---";
+                if (j < size - 1) cout << "+";
+            }
+            cout << "\n";
+        }
+    }
+    cout << "\n";
+}
 
-    bool isValidMove(int row, int col) const;
+    bool isValidMove(int row, int col) const {
+    return (row >= 0 && row < size &&
+            col >= 0 && col < size &&
+            grid[row][col] == ' ');
+}
 
-    bool makeMove(int row, int col, char symbol);
+    bool makeMove(int row, int col, char symbol){
+    if (isValidMove(row, col)) {
+        grid[row][col] = symbol;
+        return true;
+    }
+    return false;
+}
 
     bool checkWin(char symbol) const
     {
@@ -96,14 +123,18 @@ public:
 
     virtual void getMove(int& row, int& col) = 0;
 
-    string getName() const;
+    string getName() const{
+    return name;
+}
 
     char getSymbol() const
     {
         return symbol;
     }
 
-    void setName(const string& newName);
+    void setName(const string& newName){
+    name=newName;
+    }
 
     virtual ~Player() {}
 };
@@ -186,9 +217,39 @@ public:
 
     void setupPvC(Difficulty diff);
 
-    void switchPlayer();
+    void switchPlayer(){
 
-    void handleHumanMove(Player* player);
+    if (currentPlayer == player1)
+        currentPlayer = player2;
+    else
+        currentPlayer = player1;
+}
+
+    void handleHumanMove(Player* player){
+    int row, col;
+
+    while (true) {
+        cout << player->getName() << " (" << player->getSymbol() << ") enter row and column: ";
+        cin >> row >> col;
+
+        // convert to 0-based index
+        row--;
+        col--;
+
+        if (cin.fail()) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Invalid input. Try again.\n";
+            continue;
+        }
+
+        if (board.makeMove(row, col, player->getSymbol())) {
+            break;
+        } else {
+            cout << "Invalid move. Try again.\n";
+        }
+    }
+}
 
     void handleAIMove(AIPlayer* aiPlayer)
     {
